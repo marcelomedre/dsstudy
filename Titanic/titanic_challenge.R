@@ -6,7 +6,7 @@ library(readr)
 ## http://trevorstephens.com/kaggle-titanic-tutorial/r-part-1-booting-up/
 
 train <- read.csv("train.csv", stringsAsFactors=FALSE)
-test <- read_csv("test.csv", stringsAsFactors=FALSE)
+test <- read.csv("test.csv", stringsAsFactors=FALSE)
 
 ## table command is one of the most basic summary statistics functions in R, 
 ## it runs through the vector you gave it and simply counts the occurrence of each value in it. 
