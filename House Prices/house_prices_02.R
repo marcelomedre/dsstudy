@@ -97,67 +97,55 @@ test$tot_sq_footage <- test$GrLivArea + test$TotalBsmtSF
 train$total_baths = train$BsmtFullBath + train$FullBath + (0.5 * (train$BsmtHalfBath + train$HalfBath))
 test$total_baths = test$BsmtFullBath + test$FullBath + (0.5 * (test$BsmtHalfBath + test$HalfBath))
 
+train$garagevar <- train$GarageCars + train$GarageArea
+test$garagevar <- test$GarageCars + test$GarageArea
+
 library(randomForest)
 require(caret)
 set.seed(415)
-fit3 <- randomForest(SalePrice ~ .,
-                    data=train, 
-                    importance=TRUE, 
-                    ntree=10)
+fit3 <- randomForest(SalePrice ~ BsmtUnfSF + tot_sq_footage + Neighborhood +
+                      OverallQual + BsmtFinSF1 + TotalBsmtSF + YearRemodAdd +
+                      GarageType + YearBuilt + OpenPorchSF + KitchenQual +
+                      LandContour + HouseStyle + FireplaceQu + GarageYrBlt,
+              data=train,
+              importance = TRUE,
+              ntree = 1000)
 importance(fit3)
 
 imp <- varImp(fit3)
 head(rownames(imp)[order(imp$Overall, decreasing = TRUE)], n = 10)
 
-#modelling with the 6 best variables
-set.seed(415)
-fit4 <- randomForest(SalePrice ~ BsmtUnfSF + tot_sq_footage + Neighborhood +
-                             OverallQual + BsmtFinSF1 + TotalBsmtSF,
-                     data=train, 
-                     importance=TRUE, 
-                     ntree=500)
-importance(fit4)
+Prediction3 <- predict(fit3, test)
+submit3 <- data.frame(Id = test$Id, SalePrice = Prediction3)
+write.csv(submit3, file = "Randomtree_02.csv", row.names = FALSE)
 
-plot(fit4)
+## BART Machine model
 
-Prediction3 <- predict(fit4, test)
-submit4 <- data.frame(Id = test$Id, SalePrice = Prediction3)
-write.csv(submit4, file = "myrandomtree.csv", row.names = FALSE)
+SEED <- 123
+set.seed(SEED)
+options(java.parameters="-Xmx500m")
+library(bartMachine)
+set_bart_machine_num_cores(4)
+y <- log(SalePrice)
+X <- train
+X$SalePrice <- NULL
+bart <- bartMachine(X, y, num_trees = 10, seed = SEED)
 
-#modelling with the 15 best variables
-head(rownames(imp)[order(imp$Overall, decreasing = TRUE)], n = 15)
+rmse_by_num_trees(bart, tree_list = c(seq(5,35, by = 5)),
+                  num_replicates = 2)
 
-set.seed(415)
-fit5 <- randomForest(SalePrice ~ BsmtUnfSF + tot_sq_footage + Neighborhood +
-                             OverallQual + BsmtFinSF1 + TotalBsmtSF + YearRemodAdd +
-                             GarageType + YearBuilt + OpenPorchSF + KitchenQual +
-                             LandContour + HouseStyle + FireplaceQu + GarageYrBlt,
-                     data=train, 
-                     importance=TRUE, 
-                     ntree=1500)
-importance(fit5)
+#num_trees = 25 works better perhaps
 
-plot(fit5)
+bart2 <- bartMachine(X, y, num_trees = 25, seed = SEED)
+par(mar = rep(2,4))
+plot_convergence_diagnostics(bart2)
 
-Prediction4 <- predict(fit5, test)
-submit5 <- data.frame(Id = test$Id, SalePrice = Prediction3)
-write.csv(submit5, file = "my2ndrandomtree.csv", row.names = FALSE)
+par(mar = c(0.1,0.1,0.1,0.1))
+check_bart_error_assumptions(bart2)
 
-# Using an inference tree random Forest
-##### CONTINUE FROM HERE
-#library(party)
-#set.seed(415)
+var_selection_by_permute(bart2, num_reps_for_avg = 2)
 
-#model using the 6 best variables
-#fit5 <- cforest(SalePrice ~ BsmtUnfSF + tot_sq_footage + Neighborhood +
-#                       OverallQual + BsmtFinSF1 + TotalBsmtSF,
-#               data = train, 
-#               controls=cforest_unbiased(ntree=1000, mtry=3))
-#sapply(train, class)
-#sapply(test, class)
-
-# Now let's make a prediction and write a submission file
-#Prediction5 <- predict(fit5, test, OOB=TRUE)
-#submit5 <- data.frame(Id = test$Id, SalePrice = Prediction3)
-#write.csv(submit5, file = "ciforest.csv", row.names = FALSE)
-
+log_pred <- predict(bart2, X_test)
+pred <- exp(log_pred)
+submit4 <- data.frame(Id = test$Id, SalePrice = pred)
+write.csv(submit4, file = "bart_01.csv", row.names = FALSE)
