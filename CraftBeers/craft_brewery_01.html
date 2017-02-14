@@ -118,7 +118,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">craft_brewery_01.R</h1>
 <h4 class="author"><em>Marcelo</em></h4>
-<h4 class="date"><em>Thu Feb 02 12:39:53 2017</em></h4>
+<h4 class="date"><em>Thu Feb 02 12:47:54 2017</em></h4>
 
 </div>
 
@@ -126,26 +126,9 @@ $(document).ready(function () {
 <pre class="r"><code># CraftBeers dataset
 # Exploring craft Brewery data
 setwd(&quot;C:/Users/Marcelo/Desktop/DsStudy/CraftBeers&quot;)
-library(dplyr)</code></pre>
-<pre><code>## 
-## Attaching package: 'dplyr'</code></pre>
-<pre><code>## The following objects are masked from 'package:stats':
-## 
-##     filter, lag</code></pre>
-<pre><code>## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union</code></pre>
-<pre class="r"><code>library(data.table)</code></pre>
-<pre><code>## -------------------------------------------------------------------------</code></pre>
-<pre><code>## data.table + dplyr code now lives in dtplyr.
-## Please library(dtplyr)!</code></pre>
-<pre><code>## -------------------------------------------------------------------------</code></pre>
-<pre><code>## 
-## Attaching package: 'data.table'</code></pre>
-<pre><code>## The following objects are masked from 'package:dplyr':
-## 
-##     between, first, last</code></pre>
-<pre class="r"><code>library(ggplot2)
+library(dplyr)
+library(data.table)
+library(ggplot2)
 library(rmarkdown)
 
 df_beer &lt;- data.table(read.csv(&quot;beers.csv&quot;, header = TRUE,

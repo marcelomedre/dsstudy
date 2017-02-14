@@ -107,3 +107,4 @@ ggplot(data = beerxstyle, aes(x = reorder(style, -Sum), y = Sum)) +
 # - Grand Rapids, Portland and Chicago are the cities with the highest beer consume - NICE PLACES TO VISIT
 # - English Barleywine and Quadrupel present the highest alcohol content in % volume
 # - American IPA is by far the most brewed Beer Style
+rmarkdown::render("craft_brewery_01.R")
